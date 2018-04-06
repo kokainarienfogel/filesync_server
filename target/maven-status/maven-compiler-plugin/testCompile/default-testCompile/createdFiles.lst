@@ -1,5 +1,0 @@
-com\rosenbauer\springbootrestexmaple\entity\request\AddUserRequest.class
-com\rosenbauer\springbootrestexmaple\repository\UserRepository.class
-com\rosenbauer\springbootrestexmaple\SpringBootRestExmapleApplicationTests.class
-com\rosenbauer\springbootrestexmaple\controller\UserController.class
-com\rosenbauer\springbootrestexmaple\entity\User.class

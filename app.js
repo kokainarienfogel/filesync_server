@@ -27,7 +27,7 @@
                 row.append(downloadButton);
                 downloadButton.on('click', function(){
                     console.log(child.hash);
-                    app.getFile(child.hash);
+                    app.getFile(child.name, child.hash);
                 });
                 pinButton.on('click', function(){
                     app.pinFile(child.hash);
@@ -108,7 +108,7 @@
         };
     }
 
-    app.getFile = function(hash) {
+    app.getFile = function(name, hash) {
 
         if (app.pinnedHashes.includes(hash)){
             var request = indexedDB.open('cekt-filesync-data', 1);
@@ -121,14 +121,14 @@
                     var URL = window.URL;
                     var blobUrl = URL.createObjectURL(blob);
 
-                    $('#testl').attr('download', child.name);
+                    $('#testl').attr('download', name);
                     $('#testl').attr('href', blobUrl);
                     $('#testl').click();
                 };
             }
         } else {
-                $('#testl').attr('download', child.name);
-                $('#testl').attr('href', '/api/file/' + child.hash);
+                $('#testl').attr('download', name);
+                $('#testl').attr('href', '/api/file/' + hash);
                 $('#testl').click();
         }
     }

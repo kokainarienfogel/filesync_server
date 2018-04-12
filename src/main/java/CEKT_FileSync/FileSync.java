@@ -11,6 +11,7 @@ import io.undertow.Undertow;
 import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class FileSync {
 	public static void main(String[] args) {
 
 	    // Change this to your directory of choice
-	    final String watchPath = "/home/mhackl/Desktop/py";
+	    final String watchPath = "/home/aimless/cekt/";
 
         Watcher w = new Watcher();
         final Folder f;
@@ -52,7 +53,7 @@ public class FileSync {
             ResourceManager res = PathResourceManager.builder().setBase(basePath).build();
 
             Undertow server = Undertow.builder()
-                .addHttpListener(8080, "localhost") //change to 0.0.0.0 for external access
+                .addHttpListener(8090, "0.0.0.0") //change to 0.0.0.0 for external access
                 .setHandler(
                     // Set up a path handler that enables us to route prefixes to specific handlers
                     Handlers.path()
@@ -61,6 +62,7 @@ public class FileSync {
                         // /tree returns the tree structure of the watched directory
                         .addPrefixPath("/api", Handlers.pathTemplate()
                             .add("/file/{hash}", ex -> {
+                                ex.getResponseHeaders().put(new HttpString("Access-Control-Allow-Origin"), "*");
                                 String hash = ex.getQueryParameters().get("hash").getFirst();
                                 Option<File> file = f.getFileByHash(hash);
                                 if (!file.isEmpty()) {
@@ -82,6 +84,7 @@ public class FileSync {
                                 }
                             })
                             .add("/tree", ex -> {
+                                ex.getResponseHeaders().put(new HttpString("Access-Control-Allow-Origin"), "*");
                                 ex.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                                 ex.getResponseSender().send(json);
                             }))

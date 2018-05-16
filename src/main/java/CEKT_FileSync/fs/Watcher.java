@@ -3,28 +3,35 @@ package CEKT_FileSync.fs;
 import io.atlassian.fugue.Option;
 
 import java.io.File;
+import java.util.Arrays;
+
+// Watcher builds the tree on start and in a later version will refresh on changes to the underlying directory
 
 public class Watcher {
-    public Option<Folder> getTree(String path) throws Exception {
+    public Option<Folder> getTree(String path) {
 
-        java.io.File root = new java.io.File(path);
-        if (!root.isDirectory()) return Option.none();
-        Folder folder = new Folder(root.getName());
+        try {
+            java.io.File root = new java.io.File(path);
+            if (!root.isDirectory()) return Option.none();
+            Folder folder = new Folder(root.getName());
 
-        java.io.File[] list = root.listFiles();
-        if (list == null) return Option.some(folder);
+            java.io.File[] list = root.listFiles();
+            if (list == null) return Option.some(folder);
 
-        for ( File f : list ) {
-            if ( f.isDirectory() ) {
-                Option<Folder> childFolder = getTree(f.getAbsolutePath());
-                if (childFolder.isEmpty()) return Option.none();
-                folder.addChildren(childFolder.get());
-            }
-            else {
+            Arrays.stream(list).parallel().filter(File::isDirectory).forEach(d -> {
+                Option<Folder> childFolder = getTree(d.getAbsolutePath());
+                if (!childFolder.isEmpty()) folder.addChildren(childFolder.get());
+
+            });
+
+            Arrays.stream(list).parallel().filter(f -> !f.isDirectory()).forEach(f -> {
                 CEKT_FileSync.fs.File file = new CEKT_FileSync.fs.File(f);
                 folder.addChildren(file);
-            }
+            });
+
+            return Option.some(folder);
+        } catch (Exception ex) {
+            return Option.none();
         }
-        return Option.some(folder);
     }
 }

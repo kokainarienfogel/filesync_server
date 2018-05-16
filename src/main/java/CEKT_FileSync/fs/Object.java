@@ -1,5 +1,7 @@
 package CEKT_FileSync.fs;
 
+// Overlapping stuff between file and folder
+
 public abstract class Object {
 
     private final String name;

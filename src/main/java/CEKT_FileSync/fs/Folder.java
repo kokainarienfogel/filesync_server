@@ -4,6 +4,9 @@ import io.atlassian.fugue.Maybe;
 import io.atlassian.fugue.Option;
 import java.util.*;
 
+// Folder object, can contain other File/Folder objects - node object for our tree
+// We can recursively look through all the folders to retrieve a file
+
 public class Folder extends Object {
 
     private List<Object> children;

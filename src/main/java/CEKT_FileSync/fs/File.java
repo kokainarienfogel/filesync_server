@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
+// Basic file object, wrapping around the java.io.File object and providing a hash for the file
+
 public class File extends Object {
 
     public java.io.File getActualFile() {

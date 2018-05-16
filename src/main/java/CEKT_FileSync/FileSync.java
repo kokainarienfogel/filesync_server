@@ -27,13 +27,17 @@ public class FileSync {
 	public static void main(String[] args) {
 
 	    // Change this to your directory of choice
-	    final String watchPath = "/home/aimless/cekt/";
+	    final String watchPath = "/home/aimless/Desktop/Buuf Deuce/";
 
         Watcher w = new Watcher();
         final Folder f;
         final String json;
 
+        // On startup, generate a tree structure containing the directory meta data
+        // and marshal this to JSON (we use jackson.jr, which is a stripped down version of Jackson)
+
         try {
+            // Option from Atlassian's fugue functional programming library
             Option<Folder> optf = w.getTree(watchPath);
             if (optf.isEmpty()) {
                 System.out.println("Oh noes! Check watchPath? Currently: " + watchPath + "\n");
@@ -49,9 +53,10 @@ public class FileSync {
 
         try {
             // Set up a resource manager in order to serve static files
-            Path basePath = Paths.get(new java.io.File(".").getCanonicalPath());
+            Path basePath = Paths.get(new java.io.File("./pwa").getCanonicalPath());
             ResourceManager res = PathResourceManager.builder().setBase(basePath).build();
 
+            // Undertow is our http server, it's basically one of the first things you see on Google
             Undertow server = Undertow.builder()
                 .addHttpListener(8090, "0.0.0.0") //change to 0.0.0.0 for external access
                 .setHandler(
@@ -70,6 +75,9 @@ public class FileSync {
                                     String mimetype = Files.probeContentType(Paths.get(actualFile.getAbsolutePath()));
                                     ex.getResponseHeaders().put(Headers.CONTENT_TYPE, mimetype);
 
+                                    // Undertow can only serve arbitrary binary data through one or multiple ByteBuffer
+                                    // objects, for which we need a FileChannel object
+                                    // Buffers are size-limited, so we need to split things up
                                     FileInputStream fIn = new FileInputStream(actualFile);
                                     FileChannel ch = fIn.getChannel();
                                     List<ByteBuffer> buffers = new LinkedList<>();
@@ -77,7 +85,7 @@ public class FileSync {
                                     while (ch.position() < ch.size()) {
                                         ByteBuffer buffer = ByteBuffer.allocate(4096);
                                         ch.read(buffer);
-                                        buffer.flip();
+                                        buffer.flip(); // for read access, flip buffer 'direction'
                                         buffers.add(buffer);
                                     }
                                     ex.getResponseSender().send(buffers.toArray(new ByteBuffer[]{}));
@@ -97,11 +105,5 @@ public class FileSync {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
-
     }
-
 }

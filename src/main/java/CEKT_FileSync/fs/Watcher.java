@@ -19,8 +19,8 @@ public class Watcher {
     private AtomicBoolean changedFlag;
     private AtomicReference<Option<Folder>> result;
     private WatchService watcher;
-    private int totalCount;
     private AtomicInteger doneCount = new AtomicInteger();
+    private int totalCount;
 
     private int getFileCount(String path) {
         java.io.File root = new java.io.File(path);
@@ -58,9 +58,11 @@ public class Watcher {
             Arrays.stream(list).parallel().filter(f -> !f.isDirectory()).forEach(f -> {
                 CEKT_FileSync.fs.File file = new CEKT_FileSync.fs.File(f);
                 file.generateHash();
-                System.out.println("File hashed " + doneCount.getAndIncrement() + "/" + totalCount);
+                doneCount.incrementAndGet();
                 folder.addChildren(file);
             });
+
+            System.out.println("Hashing files " + doneCount.get() + "/" + totalCount);
 
             return Option.some(folder);
         } catch (Exception ex) {
@@ -84,7 +86,6 @@ public class Watcher {
                 System.out.println("Watcher thread active");
                 while (true) {
                     watcher.take();
-                    System.out.println("**");
                     doneCount.set(1);
                     changedFlag.set(true);
                     result.set(getTree(path));
@@ -92,7 +93,7 @@ public class Watcher {
             } catch (Exception ignored) {
             }
         };
-        watchTask.run();
+        (new Thread(watchTask)).start();
     }
 
     public boolean hasChanged() {

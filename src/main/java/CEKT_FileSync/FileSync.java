@@ -31,7 +31,7 @@ public class FileSync {
     public static final String JA_BIND_ADDRESS = "0.0.0.0";
 
     public static Watcher watcher;
-    public static final Folder emptyFolder = new Folder("emty_root");
+    public static final Folder emptyFolder = new Folder("empty_root");
 
     // Change this to your directory of choice
     public static final String WATCH_PATH = "/home/aimless/Desktop/Buuf Deuce/";
@@ -76,6 +76,7 @@ public class FileSync {
                             .add("/file/{hash}", ex -> {
                                 ex.getResponseHeaders().put(new HttpString("Access-Control-Allow-Origin"), "*");
                                 String hash = ex.getQueryParameters().get("hash").getFirst();
+                                System.out.println("File requested, hash: " + hash);
                                 Option<File> file = f.get().getFileByHash(hash);
                                 if (!file.isEmpty()) {
                                     java.io.File actualFile = file.get().getActualFile();
@@ -99,11 +100,10 @@ public class FileSync {
                                 }
                             })
                             .add("/tree", ex -> {
+                                System.out.println("Tree requested");
                                 try {
-                                    if (watcher.hasChanged()) f.set(
-                                            watcher.retrieve().getOrElse(emptyFolder)
-                                    );
-                                    String json = JSON.std.asString(f);
+                                    if (watcher.hasChanged()) f.set(watcher.retrieve().getOrElse(emptyFolder));
+                                    String json = JSON.std.asString(f.get());
                                     ex.getResponseHeaders().put(new HttpString("Access-Control-Allow-Origin"), "*");
                                     ex.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                                     ex.getResponseSender().send(json);

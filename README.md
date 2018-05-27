@@ -4,4 +4,6 @@ Wir benutzen [Undertow](http://undertow.io/) als Webserver. Undertow ist schön 
 
 Wesentliche Funktionen sind funktional geschrieben, hilft ungemein um Sachen später einfach parallel ausführbar zu bekommen, ausserdem ist es meistens kompakter. Das ist übrigens auch der Grund warum [Fugue](https://bitbucket.org/atlassian/fugue) als Abhängigkeit dabei ist, obwohl eigentlich kaum etwas davon benötigt wird - vielleicht fliegts für die endgültige Abgabe wieder raus.
 
+[Jackson-Jr](https://github.com/FasterXML/jackson-jr) ganz einfach deshalb weil Jackson soweit mir das bekannt ist in Sachen JSON der Standard für Java ist.
+
 *AtomicInteger* und *AtomicReference<>* sind augenscheinlich schöne Klassen um performant thread-sicher Daten und Objekte auszutauschen. Eventuell ist noch ein wenig mehr Recherche erforderlich, da explizit erwähnt dass hiermit primär nicht-blockierende Datenstrukturen gebaut werden können - geht irgendwie gegen den Einsatzzweck.

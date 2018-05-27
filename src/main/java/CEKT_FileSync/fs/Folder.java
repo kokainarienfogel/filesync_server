@@ -11,7 +11,7 @@ public class Folder extends Object {
 
     private List<Object> children;
 
-    protected Folder(String name) {
+    public Folder(String name) {
         super(name);
         this.children = new LinkedList<>();
     }

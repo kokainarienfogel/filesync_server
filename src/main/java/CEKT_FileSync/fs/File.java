@@ -19,20 +19,25 @@ public class File extends Object {
     protected File(java.io.File file) {
         super(file.getName());
         this.actualFile = file;
-        this.hash = generateHash();
         this.size = this.actualFile.length();
     }
 
-    private byte[] generateHash() {
-        MessageDigest crypt = null;
+    public void generateHash() {
+        this.hash = genHash();
+    }
+
+    private byte[] genHash() {
         try {
-            crypt = MessageDigest.getInstance("SHA-1");
-            crypt.reset();
+            MessageDigest msgDigest = MessageDigest.getInstance("MD5"); //MD5 should fast enough
+            msgDigest.reset();
 
             FileInputStream fStream = new FileInputStream(this.actualFile);
-            DigestInputStream dStream = new DigestInputStream(fStream, crypt);
-            while (dStream.read() != -1) {}
-            return crypt.digest();
+            DigestInputStream dStream = new DigestInputStream(fStream, msgDigest);
+            while (dStream.read() != -1) {
+            }
+            dStream.close();
+            fStream.close();
+            return msgDigest.digest();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+KEYSTORE=keystore
+TRUSTSTORE=truststore
+CERT=cert
+
+# these passwords must be copied to the private config file(s)
+KEYSTORE_STOREPASS=password
+KEYSTORE_KEYPASS=password
+TRUSTSTORE_STOREPASS=password
+
+keytool -genkey -alias pwa -keyalg RSA -keystore $KEYSTORE -dname "cn=localhost, ou=IT, o=Continuent, c=US" -storepass $KEYSTORE_STOREPASS -keypass $KEYSTORE_KEYPASS
+
+# enter the *KEYSTORE_STOREPASS* when prompted
+keytool -export -alias pwa -file $CERT -keystore $KEYSTORE
+
+keytool -import -trustcacerts -alias pwa -file $CERT -keystore $TRUSTSTORE -storepass $TRUSTSTORE_STOREPASS -noprompt

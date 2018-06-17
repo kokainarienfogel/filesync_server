@@ -13,13 +13,15 @@ import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
+import javax.net.ssl.*;
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,13 +30,16 @@ public class FileSync {
 
     public static final String PWA_PATH = "./pwa";
     public static final int JA_BIND_PORT = 8090;
+    public static final int JA_BIND_PORT_TLS = 8444;
     public static final String JA_BIND_ADDRESS = "0.0.0.0";
+
+    private static final char[] STORE_PASSWORD = "password".toCharArray();
 
     public static Watcher watcher;
     public static final Folder emptyFolder = new Folder("empty_root");
 
     // Change this to your directory of choice
-    public static final String WATCH_PATH = "/home/aimless/Desktop/Buuf Deuce/";
+    public static final String WATCH_PATH = "/home/aimless/Desktop/Tomato_1_28/";
 
     public static Option<Folder> process(Watcher w) {
         try {
@@ -66,6 +71,12 @@ public class FileSync {
             // Undertow is our http server, it's basically one of the first things you see on Google
             Undertow server = Undertow.builder()
                 .addHttpListener(JA_BIND_PORT, JA_BIND_ADDRESS) //change to 0.0.0.0 for external access
+                .addHttpsListener(
+                        JA_BIND_PORT_TLS,
+                        JA_BIND_ADDRESS,
+                        getKeyManagers("keystore"),
+                        getTrustManagers("truststore")
+                )
                 .setHandler(
                     // Set up a path handler that enables us to route prefixes to specific handlers
                     Handlers.path()
@@ -116,8 +127,39 @@ public class FileSync {
                 )
                 .build();
             server.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private static KeyStore loadKeyStore(String name) throws Exception {
+
+        System.out.println("Loading key store: " + name);
+        Path path = Paths.get(new java.io.File(name).getCanonicalPath());
+        final InputStream stream = Files.newInputStream(path);
+        if(stream == null) {
+            throw new RuntimeException("Could not load keystore");
+        }
+        try(InputStream is = stream) {
+            KeyStore loadedKeystore = KeyStore.getInstance("JKS");
+            loadedKeystore.load(is, STORE_PASSWORD);
+            return loadedKeystore;
+        }
+    }
+
+    private static KeyManager[] getKeyManagers(String name) throws Exception {
+        KeyStore keystore = loadKeyStore(name);
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory.init(keystore, STORE_PASSWORD);
+        return keyManagerFactory.getKeyManagers();
+    }
+
+    private static TrustManager[] getTrustManagers(String name) throws Exception {
+        KeyStore keystore = loadKeyStore(name);
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(keystore);
+        return trustManagerFactory.getTrustManagers();
+    }
+
+
 }
